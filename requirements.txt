@@ -1,0 +1,15 @@
+pandas
+receptor-utils
+openpyxl # excel in pandas
+anarcii
+stitchr
+tidytcells>=3
+pytest
+bs4
+bionumpy
+openpyxl
+
+
+wget
+changeo
+
