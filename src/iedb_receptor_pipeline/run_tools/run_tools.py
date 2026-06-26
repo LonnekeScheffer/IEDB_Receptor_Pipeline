@@ -1,8 +1,8 @@
 import iedb_receptor_pipeline.utilities.util as util
-from src.iedb_receptor_pipeline.run_tools.run_anarcii import get_anarcii_annotations
-from src.iedb_receptor_pipeline.run_tools.run_igblast import run_igblast
-from src.iedb_receptor_pipeline.run_tools.run_tidytcells import fix_with_tidytcells
-from src.iedb_receptor_pipeline.consolidate_results import consolidate_results
+from iedb_receptor_pipeline.run_tools.run_anarcii import get_anarcii_annotations
+from iedb_receptor_pipeline.run_tools.run_igblast import run_igblast
+from iedb_receptor_pipeline.run_tools.run_tidytcells import fix_with_tidytcells
+from iedb_receptor_pipeline.consolidate_results import consolidate_results
 
 from pathlib import Path
 import logging

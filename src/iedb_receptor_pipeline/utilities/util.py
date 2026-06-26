@@ -7,9 +7,10 @@ import shutil
 import re
 
 
-PROJECT_ROOT = Path("/Users/lscheffer/PycharmProjects/IEDB_receptor_annotation")
-IMGT_GERMLINE_ROOT = PROJECT_ROOT / "igblast_db_immcantation"
-OGRDB_GERMLINE_ROOT = PROJECT_ROOT / "igblast_db_ogrdb"
+PROJECT_ROOT = None
+IMGT_GERMLINE_ROOT = None
+OGRDB_GERMLINE_ROOT = None
+
 
 IGBLAST_ROOT = PROJECT_ROOT / "IgBLAST/ncbi-igblast-1.22.0"
 IGBLAST_N = IGBLAST_ROOT / "bin/igblastn"
