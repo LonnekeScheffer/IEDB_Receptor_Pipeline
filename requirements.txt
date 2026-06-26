@@ -1,6 +1,6 @@
 pandas
 openpyxl # excel in pandas
-anarcii
+anarcii>=2
 tidytcells>=3
 changeo # to run MakeDb.py for IgBLAST result parsing
 
