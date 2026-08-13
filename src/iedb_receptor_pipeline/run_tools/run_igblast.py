@@ -6,30 +6,6 @@ import logging
 from pathlib import Path
 import pandas as pd
 
-def is_immcantation_running():
-    try:
-        result = subprocess.run(
-            ["docker", "ps", "--filter", r"name=^/immcantation$", "--filter", "status=running", "--format", "{{.Names}}"],
-            capture_output=True, text=True, check=True
-        )
-        if result.stdout.strip() == "immcantation":
-            return True
-        else:
-            result = subprocess.run(
-                ["docker", "ps", "--filter", r"name=^/immcantation$", "--filter", "status=exited", "--format",
-                 "{{.Names}}"],
-                capture_output=True, text=True, check=True
-            )
-            if result.stdout.strip() == "immcantation":
-                mssg = ("In order to run IgBLAST, the immcantation suite docker must be running. "
-                        "It looks like the immcantation docker has not been started yet.\nPlease run: docker start immcantation\n")
-                logging.error(mssg)
-                raise RuntimeError(mssg)
-    except subprocess.SubprocessError:
-        mssg = ("In order to run IgBLAST, the immcantation suite docker must be running. Please run *in the project root*:\n"
-                "docker run --platform linux/amd64 -dit --name immcantation -v $(pwd):/IEDB_receptor_annotation immcantation/suite:4.6.0 tail -f /dev/null")
-        logging.error(mssg)
-        raise RuntimeError(mssg)
 
 def row_to_fasta(row, seq_col="nt"):
     return f">{row['row']}_{row['chain']}\n{row[seq_col]}\n"
