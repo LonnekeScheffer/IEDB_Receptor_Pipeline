@@ -80,10 +80,10 @@ def safe_return_junction_with_jgenes(junctions_with_jgenes, input_cdr3):
     else:
         jgene_set_no_alleles = sorted(set({gene.rsplit("*")[0] for gene in junction_jgenes.split(", ")}))
 
-        if len(jgene_set_no_alleles) > 3:
+        if len(jgene_set_no_alleles) > 1:
             logging.warning(
-                f"J gene standardization of '{input_cdr3}' to '{junction_calc}' was based on many J gene matches ({junction_jgenes}), "
-                f"this indicates a poor standarization quality. The J annotations will be omitted.")
+                f"J gene standardization of '{input_cdr3}' to '{junction_calc}' was based on multiple J gene matches ({junction_jgenes}), "
+                f"The J annotations will be omitted.")
             junction_jgenes = None
 
         else:
@@ -182,7 +182,8 @@ def tt_standardize_junction_single_vj(row, v_symbol, j_symbol, species, input_cd
                                            log_failures=False)
 
     if std_junction.is_standardized:
-        return util.safe_return_junction(std_junction.junction, row["aa"]), std_junction.j_gene_match
+        if j_symbol is not None or util.matches_basic_junction_pattern(std_junction.junction):
+            return util.safe_return_junction(std_junction.junction, row["aa"]), std_junction.j_gene_match
 
     if is_curated_cdr3:
         # todo consider dropping this part

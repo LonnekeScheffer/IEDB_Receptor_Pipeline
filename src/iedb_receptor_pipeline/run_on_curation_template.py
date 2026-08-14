@@ -18,8 +18,8 @@ LOG_TEMPLATE_ROW, LOG_TEMPLATE_CHAIN = None, None
 def parse_arguments():
     args = ArgumentParser()
 
-    args.add_argument(f'--input_file', required=True)
-    args.add_argument(f'--output_folder',  default="./iedb_receptors_output")
+    args.add_argument(f'--input_file', default="/Users/lscheffer/PycharmProjects/IEDB_receptor_annotation/data/from_curation_template/laura/Corrected Receptors sent July 26_LS.xlsx")
+    args.add_argument(f'--output_folder',  default="/Users/lscheffer/PycharmProjects/IEDB_receptor_annotation/data/out_curation_template/debugging/")
 
     return args.parse_args()
 
@@ -40,8 +40,15 @@ def get_accession_to_seq_dict(accession_ids, seq_type):
     from Bio import Entrez # only import Entrez if needed, limit requests
     Entrez.email = 'lscheffer@lji.org'
 
+    seq_dict = dict()
+
     with Entrez.efetch(id=accession_ids, db=seq_type, rettype="gb", retmode="xml") as handle:
-        return {record['GBSeq_primary-accession']: record['GBSeq_sequence'] for record in Entrez.parse(handle) if 'GBSeq_sequence' in record}
+        for record in Entrez.parse(handle):
+            if 'GBSeq_sequence' in record:
+                accession = record['GBSeq_accession-version'] if record['GBSeq_accession-version'] in accession_ids else record['GBSeq_primary-accession']
+                seq_dict[accession] = record['GBSeq_sequence']
+
+    return seq_dict
 
 
 def get_accession_to_species(accession_ids, field='GBSeq_organism'):
@@ -63,13 +70,13 @@ def safe_get_aa_sequence(accession, accession_seq_map):
         return None
 
     if accession not in accession_seq_map:
-        logging.error(f"No accession sequence was retrieved for {accession}")
+        logging.error(f"No amino acid accession sequence was retrieved for {accession}")
         return None
 
     seq = str(accession_seq_map[accession]).upper().strip()
 
     if set(seq) == {"X"} or not util.is_valid_alphabet(seq, util.AA_ALPHABET_AMBIGUOUS):
-        logging.error(f"Accession sequence for {accession} is not valid: {seq}")
+        logging.error(f"Amino acid accession sequence for {accession} is not valid: {seq}")
         return None
 
     return seq
@@ -79,13 +86,13 @@ def safe_get_nt_sequence(accession, accession_seq_map):
         return None
 
     if accession not in accession_seq_map:
-        logging.error(f"No accession sequence was retrieved for {accession}")
+        logging.error(f"No nucleotide accession sequence was retrieved for {accession}")
         return None
 
     seq = str(accession_seq_map[accession]).lower().strip()
 
-    if set(seq) == {"x"} or not util.is_valid_alphabet(seq, util.NT_ALPHABET):
-        logging.error(f"Accession sequence for {accession} is not valid: {seq}")
+    if set(seq) == {"n"} or not util.is_valid_alphabet(seq, util.NT_ALPHABET_AMBIGUOUS):
+        logging.error(f"Nucleotide accession sequence for {accession} is not valid: {seq}")
         return None
 
     return seq

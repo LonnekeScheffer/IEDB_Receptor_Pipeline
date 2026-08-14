@@ -97,7 +97,7 @@ def validate_row_chain(row, receptor_type_col, aa_col, v_dom_col, cdr1_col, cdr2
                 valid = False
                 logging.error(f"Illegal characters in {nt_col}: {get_illegal_chars(row[nt_col].lower().strip(), util.NT_ALPHABET)}{LOG_FILE_SEPARATOR}full sequence: {row[nt_col].lower().strip()}")
             else:
-                logging.warning(f"Illegal characters in {nt_col}: {get_illegal_chars(row[nt_col].lower().strip(), util.NT_ALPHABET)}{LOG_FILE_SEPARATOR}full sequence: {row[nt_col].lower().strip()}")
+                logging.info(f"Illegal characters in {nt_col}: {get_illegal_chars(row[nt_col].lower().strip(), util.NT_ALPHABET)}{LOG_FILE_SEPARATOR}full sequence: {row[nt_col].lower().strip()}")
 
         if len(row[nt_col]) % 3 != 0:
             logging.info(f"Length of nt sequence in {nt_col} is not a multiple of 3.")
@@ -215,6 +215,9 @@ def validate_ids(row):
                 for id in row[id_col].split(", "):
                     if not id.strip().isnumeric():
                         logging.error(f"{id_col} expected numeric identifier: {id}")
+
+                if "," in row[id_col] and (len(row[id_col].split(", ")) != len(set(row[id_col].split(", ")))):
+                    logging.error(f"{id_col} expected unique identifiers, found duplicates: {row[id_col]}")
 
 
 def validate_row_curation_template(row):
