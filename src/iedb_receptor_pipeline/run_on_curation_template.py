@@ -56,7 +56,7 @@ def get_accession_to_species(accession_ids, field='GBSeq_organism'):
         return dict()
 
     from Bio import Entrez # only import Entrez if needed, limit requests
-    Entrez.email = 'lscheffer@lji.org'
+    Entrez.email = None    # personal email may be set
 
     with Entrez.efetch(id=accession_ids, db="protein", rettype="gb", retmode="xml") as handle:
         return {id: record[field] for id, record in zip(accession_ids, Entrez.parse(handle)) if 'GBSeq_sequence' in record}
