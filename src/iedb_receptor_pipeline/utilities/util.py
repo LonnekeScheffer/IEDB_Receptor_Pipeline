@@ -22,6 +22,10 @@ AA_ALPHABET_STRICT = {'A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N'
 AA_ALPHABET_AMBIGUOUS = AA_ALPHABET_STRICT.union({'X', '*'})
 
 
+CDR3_AA_FULL_SEQ_CUTOFF = 40
+CDR3_NT_FULL_SEQ_CUTOFF = CDR3_AA_FULL_SEQ_CUTOFF * 3
+
+
 # see also: https://dst.lji.org/Organism.html
 
 NCBITAXON_TO_LATIN = {"9606": "Homo sapiens",

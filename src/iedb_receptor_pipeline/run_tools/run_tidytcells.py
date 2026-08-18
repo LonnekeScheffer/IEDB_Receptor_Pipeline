@@ -65,7 +65,7 @@ def get_input_cdr3(row):
         is_curated_cdr3 = True
 
     # If 'aa' contains a short sequence, presume this is CDR3
-    elif pd.notna(row["cdr3_seq_curated"]) and (len(row["aa"]) < 40):
+    elif pd.notna(row["cdr3_seq_curated"]) and (len(row["aa"]) < util.CDR3_AA_FULL_SEQ_CUTOFF):
         input_cdr3 = row["aa"]
         is_curated_cdr3 = False
 
@@ -124,8 +124,6 @@ def tt_standardize_junction(row, vgene_calc, jgene_calc, species, input_cdr3, is
     return None, None
 
 
-
-
 def get_locus(chain_type):
     if chain_type == "heavy":
         return "IGH"
@@ -150,68 +148,42 @@ def tt_standardize_junction_single_vj(row, v_symbol, j_symbol, species, input_cd
     if pd.isna(input_cdr3):
         return None, None
 
+    parameters = {"seq":input_cdr3,
+                  "locus":get_locus(row['chain_type']),
+                  "j_symbol":j_symbol,
+                  "v_symbol":v_symbol,
+                  "species":species,
+                  "allow_c_correction":True if v_symbol is not None else False,
+                  "allow_fw_correction":True if j_symbol is not None else False,
+                  "max_v_reconstruction":3 if v_symbol is not None and is_curated_cdr3 else 1,
+                  "max_j_reconstruction":3 if j_symbol is not None and is_curated_cdr3 else 1,
+                  "enforce_functional_v":True,
+                  "enforce_functional_j":True,
+                  "log_failures":False}
+
     # First: try only with functional genes
-    std_junction = tt.junction.standardize(seq=input_cdr3,
-                                           locus=get_locus(row['chain_type']),
-                                           j_symbol=j_symbol,
-                                           v_symbol=v_symbol,
-                                           species=species,
-                                           allow_c_correction=True if v_symbol is not None else False,
-                                           allow_fw_correction=True if j_symbol is not None else False,
-                                           max_v_reconstruction=3 if v_symbol is not None and is_curated_cdr3 else 1,
-                                           max_j_reconstruction=3 if j_symbol is not None and is_curated_cdr3 else 1,
-                                           enforce_functional_v=True,
-                                           enforce_functional_j=True,
-                                           log_failures=False)
+    std_junction = tt.junction.standardize(**parameters)
 
     if std_junction.is_standardized:
         return util.safe_return_junction(std_junction.junction, row["aa"]), std_junction.j_gene_match
 
     # Next: allow non-functional genes (these are being used in the IEDB by some receptors)
-    std_junction = tt.junction.standardize(seq=input_cdr3,
-                                           locus=get_locus(row['chain_type']),
-                                           j_symbol=j_symbol,
-                                           v_symbol=v_symbol,
-                                           species=species,
-                                           allow_c_correction=True if v_symbol is not None else False,
-                                           allow_fw_correction=True if j_symbol is not None else False,
-                                           max_v_reconstruction=3 if v_symbol is not None and is_curated_cdr3 else 1,
-                                           max_j_reconstruction=3 if j_symbol is not None and is_curated_cdr3 else 1,
-                                           enforce_functional_v=False,
-                                           enforce_functional_j=False,
-                                           log_failures=False)
+    std_junction = tt.junction.standardize(**{**parameters, "enforce_functional_v": False, "enforce_functional_j": False})
 
     if std_junction.is_standardized:
         if j_symbol is not None or util.matches_basic_junction_pattern(std_junction.junction):
             return util.safe_return_junction(std_junction.junction, row["aa"]), std_junction.j_gene_match
 
-    if is_curated_cdr3:
-        # todo consider dropping this part
+    # Return anyways if already followed the C...W/F pattern even when not matching germline
+    if util.matches_basic_junction_pattern(input_cdr3) and is_curated_cdr3:
+        return util.safe_return_junction(input_cdr3, row["aa"]), std_junction.j_gene_match
 
-        # if the CDR3 is curated (i.e., not retrieved from full aa seq), try with any gene, but allow no error correction/reconstruction
-        std_junction_no_genes = tt.junction.standardize(seq=input_cdr3 if std_junction.attempted_fix is None else std_junction.attempted_fix,
-                                                        locus=get_locus(row['chain_type']),
-                                                        j_symbol=None,
-                                                        v_symbol=None,
-                                                        species=species,
-                                                        allow_c_correction=False,
-                                                        allow_fw_correction=False,
-                                                        max_v_reconstruction=1,
-                                                        max_j_reconstruction=1,
-                                                        enforce_functional_v=True,
-                                                        enforce_functional_j=True,
-                                                        log_failures=False)
+    if std_junction.attempted_fix is not None:
+        if util.matches_basic_junction_pattern(std_junction.attempted_fix) and is_curated_cdr3:
+            return util.safe_return_junction(std_junction.attempted_fix, row["aa"]), std_junction.j_gene_match
 
-        if std_junction_no_genes.is_standardized:
-            logging.info(f"Corrected CDR3/Junction without V/J gene info: \"{std_junction_no_genes.junction}\"")
-            return util.safe_return_junction(std_junction_no_genes.junction, row["aa"]), std_junction_no_genes.j_gene_match
-
-        if std_junction.attempted_fix is not None:
-            if util.matches_basic_junction_pattern(std_junction.attempted_fix) and is_curated_cdr3:
-                return util.safe_return_junction(std_junction.attempted_fix, row["aa"]), std_junction.j_gene_match
-
-        logging.warning(f"Failed calculating {row['species_latin']} {row['chain_type']} CDR3/Junction based on Curated CDR3 \"{row["cdr3_seq_curated"]}\", V \"{row["vgene_curated"]}\", J \"{row["jgene_curated"]}\": {std_junction.error}")
-        return None, None
+    logging.warning(f"Failed calculating {row['species_latin']} {row['chain_type']} CDR3/Junction based on Curated CDR3 \"{row["cdr3_seq_curated"]}\", V \"{row["vgene_curated"]}\", J \"{row["jgene_curated"]}\": {std_junction.error}")
+    return None, None
 
 def safe_standardize_junction(row, vgene_calc, jgene_calc, species):
     input_cdr3, is_curated_cdr3 = get_input_cdr3(row)
@@ -236,7 +208,7 @@ def correct_cdr_to_germline(germline_cdrs, curated_cdr, cdr_type, receptor_type)
                 logging.info(f"Curated {cdr_type} ({curated_cdr}) has been corrected to valid germline subsequence {valid_cdr}")
                 return valid_cdr
 
-        if receptor_type == "TR": # todo: curated 'LIRSNE' germlines {'IRSNERE'} -> if there is only one germline, try overlap?
+        if receptor_type == "TR":
             logging.warning(f"Curated {cdr_type} {curated_cdr} does not appear in possible germline {cdr_type}s for this gene: {germline_cdrs}. This could mean the V gene or {cdr_type} is incorrect.")
 
 

@@ -39,7 +39,7 @@ def aa_is_cdr3(row):
     run_igblast = True
 
     with set_logging_context(template_row=row["row"], chain=row["chain"]):
-        if len(row["aa"]) <= 40:
+        if len(row["aa"]) <= util.CDR3_AA_FULL_SEQ_CUTOFF:
             run_igblast = False
 
             if row["aa"] == row["cdr3_seq_curated"]:

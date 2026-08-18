@@ -12,7 +12,7 @@ def warn_length(seq, column, MIN_LENGTH, MAX_LENGTH_INFO, MAX_LENGTH_WARN, seqty
 
     if pd.notna(seq):
         if len(seq) <= MIN_LENGTH:
-            if seqtype == "nucleotide" and len(seq) <= 40*3:
+            if seqtype == "nucleotide" and len(seq) <= util.CDR3_NT_FULL_SEQ_CUTOFF:
                 logging.info(f"Length of {seqtype} sequence in {column} is {len(seq)}, an attempt will be made to translate this to the CDR3. ")
             else:
                 logging.warning(f"Length of {seqtype} sequence in {column} is {len(seq)}, this is shorter than expected {scfv_info} (<= {MIN_LENGTH} {seqtype}s){LOG_FILE_SEPARATOR} {seq} {extra_info}")
@@ -72,7 +72,7 @@ def validate_row_chain(row, receptor_type_col, aa_col, v_dom_col, cdr1_col, cdr2
 
     warn_length(row[cdr1_col], cdr1_col, 4, 15, 15, "amino acid", extra_info=f"(V gene: {row[v_gene_col]}, J gene: {row[j_gene_col]}, full seq available: {pd.notna(row[aa_col])})")
     warn_length(row[cdr2_col], cdr2_col, 3, 15, 15, "amino acid", extra_info=f"(V gene: {row[v_gene_col]}, J gene: {row[j_gene_col]}, full seq available: {pd.notna(row[aa_col])}")
-    warn_length(row[cdr3_col], cdr3_col, 4, 35, 35, "amino acid", extra_info=f"(V gene: {row[v_gene_col]}, J gene: {row[j_gene_col]}, full seq available: {pd.notna(row[aa_col])}")
+    warn_length(row[cdr3_col], cdr3_col, 4, util.CDR3_AA_FULL_SEQ_CUTOFF, util.CDR3_AA_FULL_SEQ_CUTOFF, "amino acid", extra_info=f"(V gene: {row[v_gene_col]}, J gene: {row[j_gene_col]}, full seq available: {pd.notna(row[aa_col])}")
 
     if v_dom_col is not None:
         warn_length(row[v_dom_col], v_dom_col, FULL_AA_MIN_LENGTH, FULL_AA_MAX_LENGTH, FULL_AA_MAX_LENGTH, "amino acid")
@@ -86,10 +86,11 @@ def validate_row_chain(row, receptor_type_col, aa_col, v_dom_col, cdr1_col, cdr2
 
             warn_length(row[aa_col], aa_col, FULL_AA_MIN_LENGTH, FULL_AA_MAX_LENGTH, FULL_AA_MAX_LENGTH*2, "amino acid")
 
-    if v_dom_col is not None and pd.notna(row[aa_col]) and pd.notna(row[v_dom_col]): # todo same for cdr3/cdr2/etc?
-        if row[v_dom_col][1:] not in row[aa_col]:
-            logging.error(f"Expected V domain to be a subsequence of the full aa sequence{LOG_FILE_SEPARATOR}(V domain: {row[v_dom_col]}; full sequence: {row[aa_col]})")
-            #valid = False
+    for subseq_col in [v_dom_col, cdr1_col, cdr2_col, cdr3_col]:
+        if subseq_col is not None and pd.notna(row[aa_col]) and len(row[aa_col]) > util.CDR3_AA_FULL_SEQ_CUTOFF and pd.notna(row[subseq_col]):
+            if row[subseq_col] not in row[aa_col]:
+                logging.error(f"Expected V domain to be a subsequence of the full aa sequence{LOG_FILE_SEPARATOR}(V domain: {row[v_dom_col]}; full sequence: {row[aa_col]})")
+                #valid = False
 
     if pd.notna(row[nt_col]):
         if not util.is_valid_alphabet(row[nt_col].lower().strip(), util.NT_ALPHABET):
@@ -186,7 +187,7 @@ def get_chain_columns(curator_df, chain):
     chain_df["chain_type"] = curator_df[f"chain{chain}_type"]
     chain_df["species_latin"] = curator_df[f"chain{chain}_species"].apply(resolve_species)
 
-    chain_df["organism_name"] = chain_df["species_latin"] # todo distinguish between species and organism? -> for mouse strain-specific gene annotation
+    chain_df["organism_name"] = chain_df["species_latin"]
 
     chain_df["aa"] = curator_df[f"chain{chain}_pro_seq"]
     chain_df["nt"] = curator_df[f"chain{chain}_nucleotide"]
@@ -248,11 +249,6 @@ def validate_row_curation_template(row):
 
 def validate_row_db(row):
     with set_logging_context(template_row=row["row"], chain=row["chain"]):
-        # if row["species_latin"] != row["organism_name"]:
-        #     if row["organism_name"] in {''}:
-        #         pass
-        # todo deal with scfv
-
         return validate_row_chain(row=row,
                                   receptor_type_col="receptor_type",
                                   aa_col="aa",
@@ -290,20 +286,22 @@ def format_tool_input_columns(df, translate_short_nt_to_cdr3_aa, v_dom_to_aa, sc
         mask = df["aa"].isna() & df["v_dom_seq"].notna()
         df.loc[mask, "aa"] = df.loc[mask, "v_dom_seq"]
 
-    #remove spaces from nt sequence
+    # remove spaces from nt sequence
     df.loc[df["nt"].notna(), "nt"] = df.loc[df["nt"].notna(), "nt"].apply(lambda x: x.replace(" ", ""))
 
-    # if AA full seq is unavailable, but NT is available -> translate (only used for CDR3)
+    # if AA full seq is unavailable, but short NT is available -> translate and assign as CDR3
     if translate_short_nt_to_cdr3_aa:
         if any(df["nt"].notna()):
-            mask = df["nt"].notna() & (df["nt"].str.len() < 40) & df["cdr3_seq_curated"].isna()
+            mask = df["nt"].notna() & (df["nt"].str.len() <= util.CDR3_NT_FULL_SEQ_CUTOFF) & df["cdr3_seq_curated"].isna()
             df.loc[mask, "cdr3_seq_curated"] = df.loc[mask, "nt"].apply(lambda x: safe_translate(x))
 
+    # process scFvs
     scfvs = df[df["receptor_type"].str.lower().isin(["scfv", "tscfv"])]
 
     if len(scfvs) > 0:
         dual_chain_scfvs = scfvs[scfvs["row"].map(scfvs["row"].value_counts()) == 2]
 
+        # for scFvs with 2 curated chains: auto-detect the 2 domains by splitting on the SG-linker, assign single-domain sequences to 'aa'
         if len(dual_chain_scfvs) > 0:
             dual_chain_scfvs["aa"].apply(util.split_scfv)
 
@@ -321,7 +319,9 @@ def format_tool_input_columns(df, translate_short_nt_to_cdr3_aa, v_dom_to_aa, sc
 
             df.drop(columns=["chain1_scfv_aa", "chain2_scfv_aa"], inplace=True)
 
-        # if the AA full seq of scFvs is identical for chain 1 and chain 2, and V domains exist, overwrite with V domain
+        # for scFvs where the full seq is the same in both chains (expected for full seq with SG-linker),
+        # AND curated chains exist -> overwrite aa with curated V domain
+        # this is used to correct chain 1/2 order, making sure chain 1 is heavy and chain 2 is light
         if scfv_dom_to_aa:
             scfvs = df[df["receptor_type"].str.lower().isin(["scfv", "tscfv"]) & df["v_dom_seq"].notna()]
             if len(scfvs) > 0:
