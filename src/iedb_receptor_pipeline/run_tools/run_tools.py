@@ -30,7 +30,6 @@ def setup(output_folder):
 
 
 def run(output_folder, tmp_folder, tool_input, compute_results, n_processes=8):
-    util.build_path(output_folder, delete_if_exists=True)
     tool_input.to_csv(output_folder / "tool_input.csv")
 
     if compute_results:
@@ -44,7 +43,8 @@ def run(output_folder, tmp_folder, tool_input, compute_results, n_processes=8):
 
         if anarcii_results is not None:
             anarcii_results.to_csv(output_folder / "anarcii_results.csv")
-        print("anarcii done" + ", no results computed" if anarcii_results is None else "")
+        mssg = ", no results computed" if anarcii_results is None else ""
+        print("anarcii done" + mssg)
 
         print("running igblast...")
         igblast_nt_results, igblast_aa_results = run_igblast(tool_input, tmp_folder, n_processes)
@@ -53,7 +53,8 @@ def run(output_folder, tmp_folder, tool_input, compute_results, n_processes=8):
 
         if igblast_aa_results is not None:
             igblast_aa_results.to_csv(output_folder / "igblast_aa_results.csv")
-        print("igblast done" + ", no results computed" if (igblast_nt_results is None and igblast_aa_results is None) else "")
+        mssg = ", no results computed" if (igblast_nt_results is None and igblast_aa_results is None) else ""
+        print("igblast done" + mssg)
 
 
     tool_input = pd.read_csv(output_folder / "tool_input.csv")

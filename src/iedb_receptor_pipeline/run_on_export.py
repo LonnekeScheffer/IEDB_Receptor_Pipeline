@@ -7,6 +7,7 @@ from iedb_receptor_pipeline.run_tools.run_tools import run, setup
 import numpy as np
 from iedb_receptor_pipeline.utilities import util
 import pandas as pd
+from pathlib import Path
 
 
 def parse_arguments():
@@ -84,7 +85,7 @@ def main(args):
 
     if overwrite_calc:
         full_output = overwrite_calc_data(full_input_orig, consolidate_results_df)
-        full_output.to_csv(output_folder / f"{args.input_file.stem}_new_calc.csv", index=False)
+        full_output.to_csv(output_folder / f"{Path(args.input_file).stem}_new_calc.csv", index=False)
 
 
 
