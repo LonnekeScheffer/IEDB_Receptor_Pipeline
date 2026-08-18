@@ -38,7 +38,7 @@ def get_accession_to_seq_dict(accession_ids, seq_type):
         return dict()
 
     from Bio import Entrez # only import Entrez if needed, limit requests
-    Entrez.email = 'lscheffer@lji.org'
+    Entrez.email = None    # personal email may be set
 
     seq_dict = dict()
 
