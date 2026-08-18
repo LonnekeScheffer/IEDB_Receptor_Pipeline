@@ -247,6 +247,7 @@ DOUBLE_TO_SINGLE_HEADER = {('Receptor', 'Group IRI'): 'receptor_group_id',
                            ('Chain 1', 'CDR3 Curated'):  'chain1_cdr3_seq_curated',
                            ('Chain 1', 'CDR1 Curated'): 'chain1_cdr1_seq_curated',
                            ('Chain 1', 'CDR2 Curated'): 'chain1_cdr2_seq_curated',
+                           ('Chain 1', 'V Domain Calculated'): 'chain1_vdomain_calculated',
                            ('Chain 2', 'Type'): 'chain2_type',
                            ('Chain 2', 'Organism IRI'): 'chain2_species',
                            ('Chain 2', 'Nucleotide Sequence'): 'chain2_nucleotide',
@@ -257,7 +258,8 @@ DOUBLE_TO_SINGLE_HEADER = {('Receptor', 'Group IRI'): 'receptor_group_id',
                            ('Chain 2', 'Protein IRI'): 'chain2_accession',
                            ('Chain 2', 'CDR3 Curated'): 'chain2_cdr3_seq_curated',
                            ('Chain 2', 'CDR1 Curated'): 'chain2_cdr1_seq_curated',
-                           ('Chain 2', 'CDR2 Curated'): 'chain2_cdr2_seq_curated'}
+                           ('Chain 2', 'CDR2 Curated'): 'chain2_cdr2_seq_curated',
+                           ('Chain 2', 'V Domain Calculated'): 'chain2_vdomain_calculated'}
 
 
 def build_path(path, delete_if_exists=False):

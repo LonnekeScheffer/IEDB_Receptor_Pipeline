@@ -4,15 +4,6 @@ import numpy as np
 import logging
 import pandas as pd
 
-def get_row_chain(table, row, chain):
-    single_row_table = table[(table["row"] == row) & (table["chain"] == chain)]
-
-    if len(single_row_table) == 0:
-        return None
-    elif len(single_row_table) == 1:
-        return single_row_table.iloc[0]
-    else:
-        assert False, f"Found multiple rows with row number {row} and chain number {chain}:\n{single_row_table}"
 
 def safe_get_field(tool_data, field):
     result = tool_data[field] if tool_data is not None and field in tool_data else None
@@ -211,8 +202,6 @@ def get_aa_calc_data(input_row, igblast_aa_row, anarcii_aa_row, tt_row):
             "cdr1_seq": cdr1, "cdr1_seq_method": cdr1_method,
             "v_dom_seq": v_dom_seq, "v_dom_seq_method": v_dom_seq_method}
 
-def get_curated_data(input_row, tt_row):
-    return get_aa_calc_data(input_row, None, None, tt_row)
 
 def to_indexed(df):
     if df is not None:
