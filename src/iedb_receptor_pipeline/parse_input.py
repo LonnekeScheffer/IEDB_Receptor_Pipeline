@@ -180,9 +180,10 @@ def get_chain_columns(curator_df, chain):
     chain_df = pd.DataFrame(columns=["chain", "species_latin", "aa", "nt"], index=curator_df.index)
 
     chain_df["chain"] = chain
-    chain_df["curated_receptor_id"] = curator_df[f"curated_receptor_id"]
-    chain_df["chain_id_cur"] = curator_df[f"curated_chain{chain}_id"]
-    chain_df["chain_id_calc"] = curator_df[f"calculated_chain{chain}_id"]
+    chain_df["curated_receptor_id"] = curator_df["curated_receptor_id"]
+    chain_df["chain_id_cur"] = curator_df[f"curated_chain{chain}_id"] if f"curated_chain{chain}_id" in curator_df else None
+    chain_df["chain_id_calc"] = curator_df[f"calculated_chain{chain}_id"] if f"calculated_chain{chain}_id" in curator_df else None
+
     chain_df["receptor_type"] = curator_df[f"receptor_type"]
     chain_df["chain_type"] = curator_df[f"chain{chain}_type"]
     chain_df["species_latin"] = curator_df[f"chain{chain}_species"].apply(resolve_species)

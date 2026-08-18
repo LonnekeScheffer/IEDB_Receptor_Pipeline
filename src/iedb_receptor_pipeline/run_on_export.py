@@ -8,8 +8,6 @@ import numpy as np
 from iedb_receptor_pipeline.utilities import util
 import pandas as pd
 
-bcr_tcr = "tcr"
-
 
 def parse_arguments():
     args = ArgumentParser()
@@ -69,7 +67,14 @@ def main(args):
     full_input = full_input_orig[list(util.DOUBLE_TO_SINGLE_HEADER.keys())].copy()
     full_input.columns = [util.DOUBLE_TO_SINGLE_HEADER[col] for col in full_input.columns.values]
 
-    tool_input = get_tool_input(full_input, retrieve_accessions=False)
+    # The export contains no curated V domains, calculated V domains are used for this purpose. This is needed for (T)scFvs
+    full_input["chain1_vdomain_curated"] = full_input["chain1_vdomain_calculated"]
+    full_input["chain2_vdomain_curated"] = full_input["chain2_vdomain_calculated"]
+    #
+    # # The export contains no curated receptor ID, use row index instead
+    full_input["curated_receptor_id"] = full_input.index
+
+    tool_input = get_tool_input(full_input)
 
     compute_results = True
 
@@ -79,7 +84,7 @@ def main(args):
 
     if overwrite_calc:
         full_output = overwrite_calc_data(full_input_orig, consolidate_results_df)
-        full_output.to_csv(output_folder / f"{bcr_tcr}_full_v4.csv", index=False)
+        full_output.to_csv(output_folder / f"{args.input_file.stem}_new_calc.csv", index=False)
 
 
 
