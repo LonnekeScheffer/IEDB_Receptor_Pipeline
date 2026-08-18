@@ -149,7 +149,7 @@ def tt_standardize_junction_single_vj(row, v_symbol, j_symbol, species, input_cd
         return None, None
 
     parameters = {"seq":input_cdr3,
-                  "locus":get_locus(row['chain_type']),
+                  "locus": get_locus(row['chain_type']),
                   "j_symbol":j_symbol,
                   "v_symbol":v_symbol,
                   "species":species,

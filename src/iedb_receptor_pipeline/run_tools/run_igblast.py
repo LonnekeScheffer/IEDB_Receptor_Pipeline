@@ -23,7 +23,7 @@ def nt_is_cdr3(row):
     run_igblast = True
 
     with set_logging_context(template_row=row["row"], chain=row["chain"]):
-        if len(row["nt"]) <= 120:
+        if len(row["nt"]) <= util.CDR3_NT_FULL_SEQ_CUTOFF:
             run_igblast = False
 
             if not pd.isna(row["cdr3_seq_curated"]) and len(row["cdr3_seq_curated"]) * 3 == len(row["nt"]):
@@ -31,7 +31,7 @@ def nt_is_cdr3(row):
             else:
                 found = "NA" if pd.isna(row["cdr3_seq_curated"]) else row["cdr3_seq_curated"]
                 logging.info(
-                    f"Skipping IgBLAST nt because the input nucleotide sequence {row["nt"]} is too short (<= 120 nucleotides). If this is the CDR3 sequence, please add the translated sequence as the Curated CDR3 sequence instead (found {found}).")
+                    f"Skipping IgBLAST nt because the input nucleotide sequence {row["nt"]} is too short (<= {util.CDR3_NT_FULL_SEQ_CUTOFF} nucleotides). If this is the CDR3 sequence, please add the translated sequence as the Curated CDR3 sequence instead (found {found}).")
 
     return run_igblast
 
