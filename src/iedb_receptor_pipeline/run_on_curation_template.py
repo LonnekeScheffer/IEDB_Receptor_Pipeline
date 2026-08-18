@@ -51,20 +51,6 @@ def get_accession_to_seq_dict(accession_ids, seq_type):
     return seq_dict
 
 
-def get_accession_to_species(accession_ids, field='GBSeq_organism'):
-    if len(accession_ids) == 0:
-        return dict()
-
-    from Bio import Entrez # only import Entrez if needed, limit requests
-    Entrez.email = None    # personal email may be set
-
-    with Entrez.efetch(id=accession_ids, db="protein", rettype="gb", retmode="xml") as handle:
-        return {id: record[field] for id, record in zip(accession_ids, Entrez.parse(handle)) if 'GBSeq_sequence' in record}
-
-def resolve_nt_for_row(curator_nt_seq):
-    if not pd.isna(curator_nt_seq):
-        return curator_nt_seq.lower().replace(" ", "")
-
 def safe_get_aa_sequence(accession, accession_seq_map):
     if pd.isna(accession):
         return None
