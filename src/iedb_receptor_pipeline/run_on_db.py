@@ -56,14 +56,14 @@ def omit_from_calculdated_data(row):
         if ((pd.notna(row["v_gene"]) and row["v_gene"][3] != "V") or
                 (pd.notna(row["d_gene"]) and row["d_gene"][3] != "D") or
                 (pd.notna(row["j_gene"]) and row["j_gene"][3] != "J")):
-            logging.error("Omitting from calculated data: V/D/J gene incorrect, recurate")
+            logging.error("Omitting from calculated data: V/D/J gene incorrect, re-curation may be needed")
             return True
 
         # Omit chains with illegal characters in CDRs
         for seq_col in ("cdr1_seq", "cdr2_seq", "cdr3_seq", "junction_seq"):
             if pd.notna(row[seq_col]):
                 if not all(aa in util.AA_ALPHABET_STRICT for aa in set(row[seq_col])):
-                    logging.error("Omitting from calculated data: illegal character in CDR1/2/3/junction, recurate")
+                    logging.error(f"Omitting from calculated data: illegal character in {seq_col}: {row[seq_col]}, re-curation may be needed")
                     return True
 
         # If the chain type changed, curated data updates are required
@@ -71,7 +71,7 @@ def omit_from_calculdated_data(row):
             if pd.isna(row["chain_type_cur"]) and pd.isna(row["chain_type_calc"]):
                 pass
             elif not (row["chain_type_cur"] == "light" and row["chain_type_calc"].endswith("_light")):
-                logging.error(f"Omitting from calculated data: changed chain type (row: {row["row"]}, curated: {row["chain_type_cur"]}, calculated: {row["chain_type_calc"]}), recurate")
+                logging.error(f"Omitting from calculated data: changed chain type (row: {row["row"]}, curated: {row["chain_type_cur"]}, calculated: {row["chain_type_calc"]}), re-curation may be needed")
                 return True
 
     return False
@@ -129,9 +129,6 @@ def main(args):
     print("Writing recalculated chains files...")
     write_db_recalculated_chains(tool_input, consolidate_results_df, output_folder)
     print("...done")
-
-    # todo "row" based split only works for curator input, not for df based -> for scFv parse_input
-
 
 
 if __name__ == '__main__':
