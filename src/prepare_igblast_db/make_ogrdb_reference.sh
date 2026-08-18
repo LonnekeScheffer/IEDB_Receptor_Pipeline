@@ -26,6 +26,8 @@ download_germline_set "Homo sapiens" IGK -f MULTI-IGBLAST
 download_germline_set "Macaca mulatta" IGH -f MULTI-IGBLAST
 download_germline_set "Macaca mulatta" IGL -f MULTI-IGBLAST
 download_germline_set "Macaca mulatta" IGK -f MULTI-IGBLAST
+# - mouse: todo (per strain)
+# download_germline_set "Mus musculus" IGH -f MULTI-IGBLAST
 
 
 # Remove TMP names with *i and _
@@ -45,6 +47,21 @@ awk '/^>/{drop=/_/} !drop' Homo_sapiens_IGL_V_withtmpnames.fasta > Homo_sapiens_
 awk '/^>/{drop=/_/} !drop' Homo_sapiens_IGL_V_gapped_withtmpnames.fasta > Homo_sapiens_IGL_V_gapped.fasta
 
 
+
+
+download_germline_set "Mus musculus" IGH -f MULTI-IGBLAST -n "BALB/c IGH"
+download_germline_set "Mus musculus" IGH -f MULTI-IGBLAST -n "C57BL/6 IGH"
+download_germline_set "Mus musculus" IGH -f MULTI-IGBLAST -n "C57BL/6 IGHV"
+download_germline_set "Mus musculus" IGH -f MULTI-IGBLAST -n "CAST/EiJ IGH"
+download_germline_set "Mus musculus" IGH -f MULTI-IGBLAST -n "LEWES/EiJ IGH"
+download_germline_set "Mus musculus" IGH -f MULTI-IGBLAST -n "MSM/MsJ IGH"
+download_germline_set "Mus musculus" IGH -f MULTI-IGBLAST -n "NOD/ShiLtJ IGH"
+download_germline_set "Mus musculus" IGH -f MULTI-IGBLAST -n "PWD/PhJ IGH"
+
+
+# BALB/c IGH, C57BL/6 IGH, C57BL/6 IGHV, CAST/EiJ IGH, LEWES/EiJ IGH, MSM/MsJ IGH, NOD/ShiLtJ IGH, PWD/PhJ IGH
+# 129S1/SvlmJ, A/J IGLV, AKR/J IGLV, BALB/cByJ IGLV, C3H/HeJ IGLV, C57BL/6J IGLV, CAST/EiJ IGLV, CBA/J IGLV, DBA/1J IGLV, DBA/2J IGLV, LEWES/EiJ IGLV, MRL/MpJ IGLV, MSM/MsJ IGLV, NOD/ShiLtJ IGLV, NOR/LtJ IGLV, NZB/BlNJ IGLV, PWD/PhJ IGLV, SJL/J IGLV, 129S1/SvlmJ IGLV, IGLJ (all strains), BALB/c/ByJ IGLV, 129S1/SvImJ IGLV
+# 129S1/SvImJ IGKV, AKR/J IGKV, BALB/c/ByJ IGKV, C3H/HeJ IGKV, C57BL/6J IGKV, CAST/EiJ IGKV, CBA/J IGKV, DBA/1J IGKV, DBA/2J IGKV, LEWES/EiJ IGKV, MRL/MpJ IGKV, MSM/MsJ IGKV, NOD/ShiLtJ IGKV, NOR/LtJ IGKV, NZB/BlNJ IGKV, PWD/PhJ IGKV, SJL/J IGKV, A/J IGKV, IGKJ (all strains)
 
 # Combine all IG V, IG J (to discover best matching locus)
 # - human
