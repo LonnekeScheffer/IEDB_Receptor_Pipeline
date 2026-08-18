@@ -18,8 +18,8 @@ LOG_TEMPLATE_ROW, LOG_TEMPLATE_CHAIN = None, None
 def parse_arguments():
     args = ArgumentParser()
 
-    args.add_argument(f'--input_file', default="/Users/lscheffer/PycharmProjects/IEDB_receptor_annotation/data/from_curation_template/laura/Corrected Receptors sent July 26_LS.xlsx")
-    args.add_argument(f'--output_folder',  default="/Users/lscheffer/PycharmProjects/IEDB_receptor_annotation/data/out_curation_template/debugging/")
+    args.add_argument(f'--input_file', required=True)
+    args.add_argument(f'--output_folder',  default="./iedb_receptors_output")
 
     return args.parse_args()
 
