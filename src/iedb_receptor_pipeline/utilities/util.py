@@ -192,9 +192,6 @@ TOOL_INPUT_COLUMNS = ['curated_receptor_id', 'row', 'chain_id_cur', 'chain_id_ca
 
 
 CHAIN_LOCUS_TO_IEDB = {"TRA": "alpha", "TRB": "beta", "TRG": "gamma", "TRD": "delta", "IGH": "heavy", "IGL": "lambda_light", "IGK": "kappa_light"}
-
-CHAIN_IEDB_TO_ANARCI = {"alpha": ["A"], "beta": ["B"], "gamma": ["G"], "delta": ["D"], "heavy": ["H"], "light": ["L", "K"], "kappa_light": ["K"], "lambda_light": ["L"]}
-CHAIN_ANARCI_TO_IEDB_ALL = {"H": ["heavy"], "L": ["lambda_light", "light"], "A": ["alpha"], "B": ["beta"], "K": ["kappa_light", "light"], "D": ["delta"], "G": ["gamma"]}
 CHAIN_ANARCI_TO_IEDB_SINGLE = {"H": "heavy", "L": "lambda_light", "A": "alpha", "B": "beta", "K": "kappa_light", "D": "delta", "G": "gamma"}
 
 CHAIN_TO_LEGAL_LOCI = {"alpha": {"TRA", "TRD"}, # , "TRD"
