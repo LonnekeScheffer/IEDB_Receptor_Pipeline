@@ -35,10 +35,11 @@ NCBITAXON_TO_LATIN = {"9606": "Homo sapiens",
                      "9844": "Lama glama",
                      "9541": "Macaca fascicularis",
                      "9838": "Camelus dromedarius",
-                     "10116": "Rattus norvegicus",
                      "9544": "Macaca mulatta",
                      "10114": "Rattus",
-                     "9837": "Camelus bactrianus",
+                      "10116": "Rattus norvegicus",
+                      "10117": "Rattus rattus",
+                      "9837": "Camelus bactrianus",
                       "36176": "Chiloscyllium plagiosum",
                       "9835": "Camelidae",
                       "9031": "Gallus gallus",
@@ -145,6 +146,7 @@ ONTIE_TO_LATIN = {
     "0001343": "Mus musculus",
     "0000126": "Oryctolagus cuniculus",
     "0000573": "Rattus norvegicus",
+    "0000524": "Mus musculus", # Mus musculus HLA-DRB1*0401 Tg
     "0000525": "Mus musculus", # HuMAb Medarex",
     "0000563": "Mus musculus", # Xenomouse",
     "0000807": "Mus musculus", # Kunming",
@@ -164,9 +166,6 @@ CURATION_TEMPLATE_CALCULATED_COLUMNS = ["calculated_chain1_id", "chain1_chain_ty
 
 CURATION_TEMPLATE_COLUMNS = CURATION_TEMPLATE_CURATED_COLUMNS + CURATION_TEMPLATE_CALCULATED_COLUMNS
 
-
-LATIN_TO_ANARCI = {"Homo sapiens": "human", "Mus musculus": "mouse", "Mus musculus domesticus": "mouse", "Vicugna pacos": "alpaca", "Oryctolagus cuniculus": "rabbit",
-                   "Rattus rattus": "rat", "Macaca mulatta": "rhesus", "Sus domesticus": "pig", "Bos taurus": "cow"}
 
 LATIN_TO_COMMON = {"Homo sapiens": "human", "Mus musculus": "mouse", "Macaca mulatta": "rhesus_monkey"}
 COMMON_TO_UNDERSC_LATIN = {"human": "Homo_sapiens",  "mouse": "Mus_musculus"}
