@@ -4,12 +4,8 @@ anarcii>=2
 tidytcells>=3
 changeo # to run MakeDb.py for IgBLAST result parsing
 
-# For creating IgBLAST database:
+# For creating IgBLAST database from OGRDB:
 receptor-utils
 bionumpy
 wget
-
-
-#pytest
-#bs4
-#stitchr
+pytest
