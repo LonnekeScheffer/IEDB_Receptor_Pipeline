@@ -82,15 +82,20 @@ def validate_row_chain(row, receptor_type_col, aa_col, v_dom_col, cdr1_col, cdr2
             warn_length(row[aa_col], aa_col, FULL_AA_MIN_LENGTH, SCFV_FULL_AA_MAX_LENGTH, SCFV_FULL_AA_MAX_LENGTH*2, f"amino acid", is_scfv=True)
         else:
             if (str(row[receptor_type_col]).lower() not in ("scfv", "tscfv")) and (len(row[aa_col]) > FULL_AA_MIN_LENGTH) and util.is_scfv(row[aa_col]):
-                logging.warning(f"Long sequence with possible SG-linker detected, this receptor might be a (T)scFv but receptor type was {str(row[receptor_type_col]).lower()}")
+                logging.error(f"Long sequence with possible SG-linker detected, this receptor might be a (T)scFv but receptor type was {str(row[receptor_type_col]).lower()}{LOG_FILE_SEPARATOR}full_sequence: {row[aa_col]}")
 
             warn_length(row[aa_col], aa_col, FULL_AA_MIN_LENGTH, FULL_AA_MAX_LENGTH, FULL_AA_MAX_LENGTH*2, "amino acid")
 
-    for subseq_col in [v_dom_col, cdr1_col, cdr2_col, cdr3_col]:
-        if subseq_col is not None and pd.notna(row[aa_col]) and len(row[aa_col]) > util.CDR3_AA_FULL_SEQ_CUTOFF and pd.notna(row[subseq_col]):
-            if row[subseq_col] not in row[aa_col]:
-                logging.error(f"Expected V domain to be a subsequence of the full aa sequence{LOG_FILE_SEPARATOR}(V domain: {row[v_dom_col]}; full sequence: {row[aa_col]})")
-                #valid = False
+
+    if aa_col is not None and pd.notna(row[aa_col]) and len(row[aa_col]) > util.CDR3_AA_FULL_SEQ_CUTOFF:
+        for subseq_col in [cdr1_col, cdr2_col, cdr3_col]:
+            if subseq_col is not None and pd.notna(row[subseq_col]):
+                if row[subseq_col] not in row[aa_col]:
+                    logging.warning(f"Expected {subseq_col} to be a subsequence of the full aa sequence{LOG_FILE_SEPARATOR}({subseq_col}: {row[subseq_col]}; full sequence: {row[aa_col]})")
+
+        if v_dom_col is not None and pd.notna(row[v_dom_col]):
+            if row[v_dom_col][1:] not in row[aa_col]: # Skip first residue as this is often X in full sequence due to incomplete codon
+                logging.warning(f"Expected {v_dom_col} to be a subsequence of the full aa sequence{LOG_FILE_SEPARATOR}({v_dom_col}: {row[v_dom_col]}; full sequence: {row[aa_col]})")
 
     if pd.notna(row[nt_col]):
         if not util.is_valid_alphabet(row[nt_col].lower().strip(), util.NT_ALPHABET):
@@ -156,6 +161,13 @@ def resolve_species(species_input):
         if species_input != species_input.strip():
             logging.warning(f"Whitespace characters were removed from species input, please correct to remove this warning: '{species_input}'")
             species_input = species_input.strip()
+
+            if species_input in util.NCBITAXON_TO_LATIN.values():
+                return species_input
+
+        if species_input.startswith("Mus musculus"):
+            logging.warning(f"Non-standard Mus musculus subtype: {species_input}, this will be treated as Mus musculus. Note that for certain transgenic species, 'Homo sapiens' must be curated. ")
+            return "Mus musculus"
 
         if species_input.isdigit():
             return get_name_from_ontology("unknown", species_input)
