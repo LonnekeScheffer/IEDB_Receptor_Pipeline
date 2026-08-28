@@ -5,7 +5,7 @@ import logging
 import pandas as pd
 
 
-def safe_get_field(tool_data, field):
+def safe_get_field(tool_data, field, aa_strict=False):
     result = tool_data[field] if tool_data is not None and field in tool_data else None
 
     if result in ("", "nan"):
@@ -15,6 +15,11 @@ def safe_get_field(tool_data, field):
 
     if type(result) == str:
         result = result.strip()
+
+    if result is not None and aa_strict:
+        if not all(aa in util.AA_ALPHABET_STRICT for aa in set(result)):
+            logging.warning(f"Removing {field} from calculated data due to illegal characters: {result}")
+            result = None
 
     return result
 
@@ -39,10 +44,10 @@ def get_nt_calc_data(input_row, igblast_nt_row):
             "v_gene": safe_correct_gene(safe_get_field(igblast_nt_row, "v_call")),
             "d_gene": safe_correct_gene(safe_get_field(igblast_nt_row, "d_call")),
             "j_gene": safe_correct_gene(safe_get_field(igblast_nt_row, "j_call")),
-            "junction_seq": safe_get_field(igblast_nt_row, "junction_aa"),
-            "cdr3_seq": safe_get_field(igblast_nt_row, "cdr3_aa"),
-            "cdr2_seq": safe_get_field(igblast_nt_row, "cdr2_aa"),
-            "cdr1_seq": safe_get_field(igblast_nt_row, "cdr1_aa"),
+            "junction_seq": safe_get_field(igblast_nt_row, "junction_aa", aa_strict=True),
+            "cdr3_seq": safe_get_field(igblast_nt_row, "cdr3_aa", aa_strict=True),
+            "cdr2_seq": safe_get_field(igblast_nt_row, "cdr2_aa", aa_strict=True),
+            "cdr1_seq": safe_get_field(igblast_nt_row, "cdr1_aa", aa_strict=True),
             "v_dom_seq": safe_get_field(igblast_nt_row, "sequence_alignment_aa"),
             "v_gene_method": "IgBLAST nt",
             "j_gene_method": "IgBLAST nt",
@@ -79,10 +84,10 @@ def consolidate_v_gene_aa(igblast_aa_row, tt_row):
 
 def consolidate_cdr3_junction(input_row, anarcii_row, tt_row):
     input_seq = safe_get_field(input_row, "cdr3_seq_curated")
-    anarcii_junction = safe_get_field(anarcii_row, "junction_seq_calculated")
-    anarcii_cdr3 = safe_get_field(anarcii_row, "cdr3_seq_calculated")
-    tt_junction = safe_get_field(tt_row, "junction_seq_calculated")
-    tt_cdr3 = safe_get_field(tt_row, "cdr3_seq_calculated")
+    anarcii_junction = safe_get_field(anarcii_row, "junction_seq_calculated", aa_strict=True)
+    anarcii_cdr3 = safe_get_field(anarcii_row, "cdr3_seq_calculated", aa_strict=True)
+    tt_junction = safe_get_field(tt_row, "junction_seq_calculated", aa_strict=True)
+    tt_cdr3 = safe_get_field(tt_row, "cdr3_seq_calculated", aa_strict=True)
 
     if anarcii_cdr3:
         if tt_cdr3 is None and tt_junction is None:
@@ -111,8 +116,8 @@ def consolidate_cdr3_junction(input_row, anarcii_row, tt_row):
 
 def consolidate_cdr12(input_row, anarcii_aa_row, tt_row, cdr):
     input_cdr = safe_get_field(input_row, f"{cdr}_seq_curated")
-    anarcii_cdr = safe_get_field(anarcii_aa_row, f"{cdr}_seq_calculated")
-    tt_cdr = safe_get_field(tt_row, f"{cdr}_seq_calculated")
+    anarcii_cdr = safe_get_field(anarcii_aa_row, f"{cdr}_seq_calculated", aa_strict=True)
+    tt_cdr = safe_get_field(tt_row, f"{cdr}_seq_calculated", aa_strict=True)
 
     if anarcii_cdr is not None:
         if input_cdr is not None and anarcii_cdr != input_cdr:
